@@ -1,0 +1,133 @@
+{
+    "Name": "MasterScene",
+    "Entries": [
+        {
+            "FileID": 500,
+            "TypeID": 102,
+            "TypeName": "PrefabRef",
+            "Properties": {
+                "SourcePrefab": { "Source": "Project", "Guid": 12 },
+                "Parent": 0,
+                "Overrides": {
+                	"EntryOverrides": {
+                    	"501": {
+                        	"Position": { "x": 0, "y": 0 }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+{
+    "Guid": 1,
+	"Type": "Scene"
+}
+{
+    "Entries": [
+        {
+            "FileID": 500,
+            "TypeID": 1,
+            "TypeName": "Entity",
+            "Properties": {
+                "Parent": { "Guid": 0, "InstanceID": 0, "FileID": 0 },
+                "Tag": "ScreenQuad"
+            }
+        },
+        {
+            "FileID": 501,
+            "TypeID": 2,
+            "TypeName": "TransformData",
+            "Properties": {
+                "Parent": { "Guid": 12, "InstanceID": 0, "FileID": 500 },
+                "Position": { "x": 0, "y": 0 },
+                "Scale": { "x": 1, "y": 1 }
+            }
+        },
+        {
+            "FileID": 502,
+            "TypeID": 3,
+            "TypeName": "MeshData",
+            "Properties": {
+                "Parent": { "Guid": 12, "InstanceID": 0, "FileID": 500 },
+                "Mesh": { "Source": "Engine", "Guid": 0 }
+            }
+        },
+        {
+            "FileID": 503,
+            "TypeID": 4,
+            "TypeName": "RendererData",
+            "Properties": {
+                "Parent": { "Guid": 12, "InstanceID": 0, "FileID": 500 },
+                "Material": { "Source": "Project", "Guid": 102 }
+            }
+        }
+    ]
+}
+{
+    "Guid": 12,
+	"Type": "Prefab"
+}
+{
+	"Shader": { "Source": "Project", "Guid": 200 },
+	"Textures": {
+		"mainTex": { "Source": "Engine", "Guid": 2 }
+	},
+	"Properties": {
+	}
+}{
+	"Guid": 102,
+	"Type": "Material"
+}##Vertex
+
+VertexInput {
+    vec2 aPos : Position
+    vec2 texCoord : TexCoord0
+    vec4 color : Color
+}
+
+uniform mat3 objectToWorld;
+uniform mat3 worldToView;
+uniform mat3 viewToScreen;
+
+out vec4 vertexColor;
+out vec2 uv;
+
+void main()
+{
+    gl_Position = vec4(aPos.x * 2.0, aPos.y * 2.0, 0.0, 1.0);
+    uv = texCoord;
+    vertexColor = color;
+}
+
+##Fragment
+
+in vec4 vertexColor;
+in vec2 uv;
+
+out vec4 FragColor;
+
+uniform sampler2D mainTex;
+uniform float time;
+vec4 tint;
+
+void main()
+{
+    tint = vec4(1.0, 1.0, 1.0, 1.0);
+    float brightness = 0.5 + 0.5 * sin(time);
+    FragColor = texture(mainTex, uv) * tint * brightness;
+}{
+    "Guid": 200,
+	"Type": "Shader"
+}
+{
+    "MasterScene": 1,
+    "BuildScenes": [
+        {
+            "Guid": 1
+        }
+    ]
+}{
+    "Guid": 900,
+    "Type": "Config"
+}

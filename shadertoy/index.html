@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Phezu Shader Toy</title>
+  <meta name="description" content="Write GLSL fragment shaders and watch them render live in Phezu Engine, a C++ game engine compiled to WebAssembly.">
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <strong>Phezu Shader Toy</strong>
+      <span>A C++ game engine, compiled to WebAssembly, running in your browser</span>
+    </div>
+    <nav>
+      <a href="https://github.com/Faizu314/PhezuEngine">Engine source</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <div class="screen">
+        <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+        <div class="loading" id="loading">Starting engine…</div>
+      </div>
+      <ul class="facts">
+        <li><strong>Real engine</strong>The same C++ renderer as the desktop build, not a JavaScript copy.</li>
+        <li><strong>Hot reload</strong>Shaders recompile while the engine keeps running.</li>
+        <li><strong>Safe failures</strong>A broken shader is rejected and the last working one keeps drawing.</li>
+      </ul>
+    </section>
+
+    <section class="editor">
+      <div class="toolbar">
+        <select id="preset" aria-label="Example shaders"></select>
+        <span class="status" id="status"></span>
+        <button id="run" title="Ctrl + Enter">Refresh</button>
+      </div>
+      <p class="contract">
+        <code>in vec2 uv</code><code>uniform float time</code><code>uniform sampler2D mainTex</code><code>out vec4 FragColor</code>
+      </p>
+      <div class="code">
+        <pre class="gutter" id="gutter" aria-hidden="true"></pre>
+        <textarea id="source" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Fragment shader"></textarea>
+      </div>
+      <pre class="log" id="log"></pre>
+    </section>
+  </main>
+</body>
+</html>
