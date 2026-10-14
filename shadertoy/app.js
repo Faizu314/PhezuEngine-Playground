@@ -74,6 +74,10 @@ uniform sampler2D mainTex;
   const gutter = $("gutter");
   const log = $("log");
   const status = $("status");
+  const highlight = $("highlight");
+
+  const GLSL = /(\/\/.*)|\b(void|float|int|bool|vec[234]|mat[234]|sampler2D|in|out|uniform|const|return|if|else|for|while|break|continue|discard|true|false)\b|\b(sin|cos|tan|asin|acos|atan|abs|sign|floor|ceil|fract|mod|min|max|clamp|mix|step|smoothstep|length|distance|dot|cross|normalize|reflect|pow|exp|log|sqrt|texture)\b|\b(uv|time|mainTex|FragColor)\b|(\b\d+\.?\d*|\.\d+)/g;
+  const CLASSES = ["c", "k", "f", "v", "n"];
 
   let capture = null;
   let errorLines = new Set();
@@ -92,6 +96,18 @@ uniform sampler2D mainTex;
     log.scrollTop = log.scrollHeight;
   }
 
+  function renderHighlight() {
+    const escaped = source.value.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+    highlight.innerHTML = escaped.replace(GLSL, (match, ...groups) =>
+      `<span class="${CLASSES[groups.slice(0, 5).findIndex((g) => g !== undefined)]}">${match}</span>`) + "\n";
+    syncScroll();
+  }
+
+  function syncScroll() {
+    gutter.scrollTop = highlight.scrollTop = source.scrollTop;
+    highlight.scrollLeft = source.scrollLeft;
+  }
+
   function renderGutter() {
     const count = source.value.split("\n").length;
     gutter.innerHTML = Array.from({ length: count }, (_, i) =>
@@ -99,7 +115,13 @@ uniform sampler2D mainTex;
     gutter.scrollTop = source.scrollTop;
   }
 
+  function renderEditor() {
+    renderGutter();
+    renderHighlight();
+  }
+
   function run() {
+    log.replaceChildren();
     capture = [];
     const start = performance.now();
     Module.ccall("Phezu_ReloadShader", null, ["number", "string"], [SHADER_GUID, TEMPLATE + source.value]);
@@ -123,6 +145,7 @@ uniform sampler2D mainTex;
 
   $("preset").addEventListener("change", (e) => {
     source.value = PRESETS[e.target.value];
+    renderEditor();
     run();
   });
 
@@ -132,7 +155,7 @@ uniform sampler2D mainTex;
     if (e.key === "Tab") {
       e.preventDefault();
       source.setRangeText("    ", source.selectionStart, source.selectionEnd, "end");
-      renderGutter();
+      renderEditor();
     }
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -142,14 +165,14 @@ uniform sampler2D mainTex;
 
   let recompileTimer;
   source.addEventListener("input", () => {
-    renderGutter();
+    renderEditor();
     clearTimeout(recompileTimer);
     recompileTimer = setTimeout(run, RECOMPILE_DELAY);
   });
-  source.addEventListener("scroll", () => { gutter.scrollTop = source.scrollTop; });
+  source.addEventListener("scroll", syncScroll);
 
   source.value = PRESETS.Plasma;
-  renderGutter();
+  renderEditor();
 
   window.Module = {
     canvas: $("canvas"),
@@ -162,9 +185,17 @@ uniform sampler2D mainTex;
       run();
 
       let last = performance.now();
+      let frames = 0;
+      let fpsStart = last;
       requestAnimationFrame(function frame(now) {
         Module._Phezu_UpdateSim((now - last) / 1000);
         last = now;
+        frames++;
+        if (now - fpsStart >= 500) {
+          $("fps").textContent = `${Math.round(frames * 1000 / (now - fpsStart))} fps`;
+          frames = 0;
+          fpsStart = now;
+        }
         requestAnimationFrame(frame);
       });
 
